@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       cryptopay
+      POSTGRES_USER:     cryptopay
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cryptopay"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:          postgres://cryptopay:changeme@postgres:5432/cryptopay
+      ADMIN_JWT_SECRET:      change-me-admin-secret
+      CLIENT_JWT_SECRET:     change-me-client-secret
+      ADMIN_EMAIL:           admin@yourplatform.com
+      ADMIN_PASSWORD:        StrongPassword123
+      PORT:                  4000
+      ADMIN_DASHBOARD_URL:   http://localhost:3001
+      CLIENT_DASHBOARD_URL:  http://localhost:3002
+      PLATFORM_URL:          http://localhost:4000
+    ports:
+      - "4000:4000"
+
+  admin:
+    build: ./admin
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL:   http://localhost:4000
+    ports:
+      - "3001:3001"
+
+  client:
+    build: ./client
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL:      http://localhost:4000
+      NEXT_PUBLIC_PLATFORM_URL: http://localhost:4000
+    ports:
+      - "3002:3002"
+
+volumes:
+  pgdata:

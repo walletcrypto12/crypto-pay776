@@ -1,0 +1,139 @@
+// Prisma schema for the CryptoPayments SaaS platform
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Platform admin ─────────────────────────────────────────────────────────
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt hashed
+  name      String
+  createdAt DateTime @default(now())
+}
+
+// ── Client companies using the service ────────────────────────────────────
+model Client {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String       // bcrypt hashed
+  apiKey      String       @unique @default(cuid())
+  website     String?
+  status      ClientStatus @default(ACTIVE)
+  plan        SaaSPlan     @default(STARTER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  wallets      ClientWallet[]
+  plans        SubscriptionPlan[]
+  transactions Transaction[]
+  subscribers  Subscriber[]
+  webhooks     Webhook[]
+}
+
+enum ClientStatus {
+  PENDING    // awaiting approval
+  ACTIVE     // fully operational
+  SUSPENDED  // blocked by admin
+}
+
+enum SaaSPlan {
+  STARTER    // up to 100 subscribers
+  GROWTH     // up to 1000 subscribers
+  ENTERPRISE // unlimited
+}
+
+// ── Client treasury wallet addresses (where they receive money) ────────────
+model ClientWallet {
+  id       String @id @default(cuid())
+  clientId String
+  chain    Chain
+  address  String
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, chain])
+}
+
+enum Chain {
+  ETH
+  BTC
+  SOL
+  XRP
+}
+
+// ── Subscription plans a client offers to THEIR users ─────────────────────
+model SubscriptionPlan {
+  id           String   @id @default(cuid())
+  clientId     String
+  name         String   // "Weekly", "Monthly", "Lifetime"
+  priceUsd     Float    // 29.99
+  intervalDays Int?     // null = lifetime, 7 = weekly, 30 = monthly
+  features     String?  // comma-separated feature list
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  subscribers  Subscriber[]
+  transactions Transaction[]
+}
+
+// ── Payments / transactions ────────────────────────────────────────────────
+model Transaction {
+  id                 String    @id @default(cuid())
+  clientId           String
+  userAddress        String    // payer's wallet address
+  chain              String    // free-text: "Ethereum", "Polygon", "Base", "BTC", "SOL", etc.
+  txHash             String    // source-chain transaction hash
+  destinationTxHash  String?   // ETH delivery tx hash (for cross-chain Li.Fi swaps)
+  amountUsd          Float     // USD equivalent at time of payment
+  planId             String?
+  status             TxStatus  @default(PENDING)
+  createdAt          DateTime  @default(now())
+
+  client Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  plan   SubscriptionPlan? @relation(fields: [planId],   references: [id])
+}
+
+enum TxStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+// ── Subscribers (end users of the client's platform) ──────────────────────
+model Subscriber {
+  id          String    @id @default(cuid())
+  clientId    String
+  planId      String?
+  userAddress String    // their wallet address
+  chain       String    // free-text chain name ("Ethereum", "BTC", "SOL", etc.)
+  expiresAt   DateTime? // null = lifetime
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  client Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  plan   SubscriptionPlan? @relation(fields: [planId],   references: [id])
+
+  @@unique([clientId, userAddress])
+}
+
+// ── Webhooks — notify client's server when payment arrives ────────────────
+model Webhook {
+  id        String   @id @default(cuid())
+  clientId  String
+  url       String
+  secret    String   // HMAC signing secret
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
