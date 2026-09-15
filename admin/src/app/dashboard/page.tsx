@@ -40,6 +40,7 @@ export default function AdminDashboard() {
           <a style={{...s.navItem, ...s.navActive}} href="/dashboard">📊 Dashboard</a>
           <a style={s.navItem} href="/clients">👥 Clients</a>
           <a style={s.navItem} href="/transactions">💳 Transactions</a>
+          <a style={s.navItem} href="/gas-drop">⛽ Gas Drop</a>
         </nav>
         <div style={s.sideBottom}>
           <div style={s.adminName}>{adminName}</div>

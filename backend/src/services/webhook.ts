@@ -15,8 +15,9 @@ export type WebhookEvent = {
   userAddress: string;
   chain:       string;
   txHash:      string;
+  destinationTxHash?: string | null;
   amountUsd:   number;
-  planName?:   string;
+  planName?:   string | null;
   timestamp:   string;
 };
 

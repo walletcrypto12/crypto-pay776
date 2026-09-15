@@ -18,7 +18,9 @@
     "express":         "^4.19.2",
     "jsonwebtoken":    "^9.0.2",
     "uuid":            "^10.0.0",
-    "node-fetch":      "^3.3.2"
+    "node-fetch":      "^3.3.2",
+    "viem":            "^2.21.0",
+    "tronweb":         "^6.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs":     "^2.4.6",

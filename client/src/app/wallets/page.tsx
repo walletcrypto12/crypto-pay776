@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { api } from "@/lib/api";
 
-const CHAINS = ["ETH","BTC","SOL","XRP"];
+const CHAINS = ["ETH","BTC","SOL","XRP","TRX"];
 
 export default function WalletsPage() {
   const router = useRouter();
@@ -83,7 +83,8 @@ export default function WalletsPage() {
 
         <div style={s.info}>
           ℹ️ Your BTC, SOL, and XRP addresses receive native coins. Your ETH address receives ETH-based tokens (ETH, USDC, etc.).
-          No conversion or bridge — funds land directly in your wallets.
+          Your TRX address receives USDT (TRC20) — buyers can pay with almost any coin and it's automatically converted for you.
+          No conversion or bridge on the other chains — funds land directly in your wallets.
         </div>
       </main>
     </div>

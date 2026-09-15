@@ -98,8 +98,8 @@ router.get("/wallets", clientAuth, async (req: ClientRequest, res) => {
 router.post("/wallets", clientAuth, async (req: ClientRequest, res) => {
   const { chain, address } = req.body;
   if (!chain || !address) return res.status(400).json({ error: "Chain and address required" });
-  if (!["ETH", "BTC", "SOL", "XRP"].includes(chain)) {
-    return res.status(400).json({ error: "Chain must be ETH, BTC, SOL, or XRP" });
+  if (!["ETH", "BTC", "SOL", "XRP", "TRX"].includes(chain)) {
+    return res.status(400).json({ error: "Chain must be ETH, BTC, SOL, XRP, or TRX" });
   }
 
   const wallet = await prisma.clientWallet.upsert({
@@ -112,7 +112,7 @@ router.post("/wallets", clientAuth, async (req: ClientRequest, res) => {
 
 router.delete("/wallets/:chain", clientAuth, async (req: ClientRequest, res) => {
   await prisma.clientWallet.deleteMany({
-    where: { clientId: req.clientId!, chain: req.params.chain as "ETH" | "BTC" | "SOL" | "XRP" },
+    where: { clientId: req.clientId!, chain: req.params.chain as "ETH" | "BTC" | "SOL" | "XRP" | "TRX" },
   });
   res.json({ success: true });
 });
@@ -120,7 +120,10 @@ router.delete("/wallets/:chain", clientAuth, async (req: ClientRequest, res) => 
 // ── Subscription plans ─────────────────────────────────────────────────────
 
 router.get("/plans", clientAuth, async (req: ClientRequest, res) => {
-  const plans = await prisma.subscriptionPlan.findMany({ where: { clientId: req.clientId! } });
+  // Payment links are SubscriptionPlan rows under the hood (reusing the
+  // exact same order/checkout machinery) but shouldn't clutter the Embed
+  // setup's plan list — they have their own page and their own flow.
+  const plans = await prisma.subscriptionPlan.findMany({ where: { clientId: req.clientId!, isPaymentLink: false } });
   res.json(plans);
 });
 
@@ -147,6 +150,55 @@ router.patch("/plans/:id", clientAuth, async (req: ClientRequest, res) => {
 router.delete("/plans/:id", clientAuth, async (req: ClientRequest, res) => {
   await prisma.subscriptionPlan.deleteMany({
     where: { id: req.params.id, clientId: req.clientId! },
+  });
+  res.json({ success: true });
+});
+
+// ── Payment links ───────────────────────────────────────────────────────────
+// A shareable public URL for a one-off custom amount — e.g. invoicing a
+// specific customer. Reuses the exact same SubscriptionPlan + Order/
+// Transaction machinery as regular embedded plans (isPaymentLink just keeps
+// it out of the Embed setup's plan list); the public /pay/:id page in
+// widget.ts opens the widget for it directly. Reusable by anyone who opens
+// the link, same as an embedded "Pay" button would be.
+
+router.get("/payment-links", clientAuth, async (req: ClientRequest, res) => {
+  const links = await prisma.subscriptionPlan.findMany({
+    where: { clientId: req.clientId!, isPaymentLink: true },
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(links);
+});
+
+router.post("/payment-links", clientAuth, async (req: ClientRequest, res) => {
+  const { label, amountUsd } = req.body;
+  if (!amountUsd || !(parseFloat(amountUsd) > 0)) {
+    return res.status(400).json({ error: "A positive amount is required" });
+  }
+  const link = await prisma.subscriptionPlan.create({
+    data: {
+      clientId: req.clientId!,
+      name: label || "Payment Link",
+      priceUsd: parseFloat(amountUsd),
+      intervalDays: null, // one-off, not recurring
+      isPaymentLink: true,
+    },
+  });
+  res.status(201).json(link);
+});
+
+router.patch("/payment-links/:id", clientAuth, async (req: ClientRequest, res) => {
+  const { active } = req.body;
+  const link = await prisma.subscriptionPlan.updateMany({
+    where: { id: req.params.id, clientId: req.clientId!, isPaymentLink: true },
+    data: { active },
+  });
+  res.json(link);
+});
+
+router.delete("/payment-links/:id", clientAuth, async (req: ClientRequest, res) => {
+  await prisma.subscriptionPlan.deleteMany({
+    where: { id: req.params.id, clientId: req.clientId!, isPaymentLink: true },
   });
   res.json({ success: true });
 });

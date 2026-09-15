@@ -39,6 +39,12 @@ export const api = {
   updatePlan:   (id: string, body: object)=> apiFetch(`/api/client/plans/${id}`, { method: "PATCH",  body: JSON.stringify(body) }),
   deletePlan:   (id: string)             => apiFetch(`/api/client/plans/${id}`, { method: "DELETE" }),
 
+  // Payment links
+  paymentLinks:       ()                       => apiFetch("/api/client/payment-links"),
+  createPaymentLink:  (body: object)           => apiFetch("/api/client/payment-links",       { method: "POST",  body: JSON.stringify(body) }),
+  updatePaymentLink:  (id: string, body: object)=> apiFetch(`/api/client/payment-links/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deletePaymentLink:  (id: string)             => apiFetch(`/api/client/payment-links/${id}`, { method: "DELETE" }),
+
   // Transactions
   transactions: (page = 1)              => apiFetch(`/api/client/transactions?page=${page}`),
 

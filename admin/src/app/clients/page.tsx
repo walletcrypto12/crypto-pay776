@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
@@ -9,6 +9,8 @@ export default function ClientsPage() {
   const [selected, setSelected] = useState<any | null>(null);
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
+  const [savingPromo, setSavingPromo] = useState(false);
+  const promoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!localStorage.getItem("admin_token")) { router.push("/"); return; }
@@ -26,6 +28,18 @@ export default function ClientsPage() {
     await api.setClientPlan(id, plan);
     setClients(prev => prev.map(c => c.id === id ? { ...c, plan } : c));
     if (selected?.id === id) setSelected((p: any) => ({ ...p, plan }));
+  }
+
+  async function savePromoMemo(id: string) {
+    const value = promoInputRef.current?.value.trim() || null;
+    setSavingPromo(true);
+    try {
+      await api.setClientPromoMemo(id, value);
+      setClients(prev => prev.map(c => c.id === id ? { ...c, promoMemo: value } : c));
+      setSelected((p: any) => (p && p.id === id ? { ...p, promoMemo: value } : p));
+    } finally {
+      setSavingPromo(false);
+    }
   }
 
   async function removeClient(id: string) {
@@ -50,6 +64,7 @@ export default function ClientsPage() {
           <a style={s.navItem} href="/dashboard">📊 Dashboard</a>
           <a style={{...s.navItem,...s.navActive}} href="/clients">👥 Clients</a>
           <a style={s.navItem} href="/transactions">💳 Transactions</a>
+          <a style={s.navItem} href="/gas-drop">⛽ Gas Drop</a>
         </nav>
         <div style={s.sideBottom}>
           <button style={s.logoutBtn} onClick={() => { localStorage.clear(); router.push("/"); }}>Sign out</button>
@@ -113,6 +128,28 @@ export default function ClientsPage() {
                 <select style={s.select} value={selected.plan} onChange={e => changePlan(selected.id, e.target.value)}>
                   {["STARTER","GROWTH","ENTERPRISE"].map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
+              </div>
+
+              <div style={s.detailSection}>
+                <div style={s.detailLabel}>Promo Memo (on-chain)</div>
+                <input
+                  key={selected.id}
+                  ref={promoInputRef}
+                  style={s.select}
+                  defaultValue={selected.promoMemo ?? ""}
+                  placeholder="Payment secured by CryptoPay — cryptopay.io (default)"
+                  maxLength={140}
+                />
+                <div style={{ fontSize: 11, color: "#64748b", marginTop: 8, lineHeight: 1.5 }}>
+                  Appended to every relayed Ethereum+USDC payment's on-chain memo for this client — seen by the payer and permanently recorded on-chain. Not editable by the client or payer. Leave blank to use the platform default.
+                </div>
+                <button
+                  style={{ ...s.btn, ...s.btnSuccess, marginTop: 10, flex: "0 0 auto", padding: "8px 16px" }}
+                  onClick={() => savePromoMemo(selected.id)}
+                  disabled={savingPromo}
+                >
+                  {savingPromo ? "Saving…" : "Save"}
+                </button>
               </div>
 
               <div style={s.actions}>

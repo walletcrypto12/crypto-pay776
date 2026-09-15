@@ -143,6 +143,18 @@ export function totalFeeUSD(quote: LiFiQuote): number {
   return total;
 }
 
+/**
+ * On-chain gas cost only (excludes bridge/protocol fees, which come out of
+ * the output amount rather than needing extra native token upfront). This is
+ * the real amount that must stay in the wallet to execute the transaction —
+ * a live figure from Li.Fi's own estimate, not a static per-chain guess.
+ */
+export function gasCostUSD(quote: LiFiQuote): number {
+  let total = 0;
+  for (const g of quote.estimate.gasCosts ?? []) total += parseFloat(g.amountUSD || "0");
+  return total;
+}
+
 /** True when the from-token is the native coin (ETH, MATIC, BNB, …) */
 export function isNativeToken(address: string): boolean {
   return address.toLowerCase() === NATIVE_TOKEN.toLowerCase();

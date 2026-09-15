@@ -26,6 +26,8 @@ export const api = {
   client:             (id: string)             => apiFetch(`/api/admin/clients/${id}`),
   setClientStatus:    (id: string, status: string) => apiFetch(`/api/admin/clients/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
   setClientPlan:      (id: string, plan: string)   => apiFetch(`/api/admin/clients/${id}/plan`,   { method: "PATCH", body: JSON.stringify({ plan }) }),
+  setClientPromoMemo: (id: string, promoMemo: string | null) => apiFetch(`/api/admin/clients/${id}/promo-memo`, { method: "PATCH", body: JSON.stringify({ promoMemo }) }),
   deleteClient:       (id: string)             => apiFetch(`/api/admin/clients/${id}`,      { method: "DELETE" }),
   transactions:       (page = 1)               => apiFetch(`/api/admin/transactions?page=${page}`),
+  gasDrop:            ()                       => apiFetch("/api/admin/gas-drop"),
 };

@@ -5,6 +5,7 @@ const links = [
   { href:"/dashboard",    icon:"📊", label:"Dashboard" },
   { href:"/wallets",      icon:"💼", label:"Wallets" },
   { href:"/plans",        icon:"📋", label:"Plans" },
+  { href:"/payment-links",icon:"💵", label:"Payment Links" },
   { href:"/subscribers",  icon:"🔔", label:"Subscribers" },
   { href:"/transactions", icon:"💳", label:"Transactions" },
   { href:"/embed",        icon:"🔗", label:"Embed Widget" },

@@ -15,6 +15,13 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
   const [saving,  setSaving]  = useState(false);
   const [error,   setError]   = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  function copyId(id: string) {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(c => c === id ? null : c), 2000);
+  }
 
   useEffect(() => {
     if (!localStorage.getItem("client_token")) { router.push("/"); return; }
@@ -104,6 +111,11 @@ export default function PlansPage() {
                 <div style={s.planName}>{p.name}</div>
                 <div style={s.planPrice}>${p.priceUsd.toFixed(2)}</div>
                 <div style={s.planInterval}>{p.intervalDays ? `Every ${p.intervalDays} days` : "Lifetime"}</div>
+                <div style={s.planIdRow}>
+                  <span style={s.planIdLabel}>Plan ID</span>
+                  <code style={s.planIdCode}>{p.id}</code>
+                  <button style={s.copyIdBtn} onClick={() => copyId(p.id)}>{copiedId === p.id ? "✓ Copied" : "Copy"}</button>
+                </div>
                 {p.features && (
                   <ul style={s.features}>
                     {p.features.split(",").map(f => <li key={f} style={s.featureItem}>{f.trim()}</li>)}
@@ -144,6 +156,10 @@ const s: Record<string, React.CSSProperties> = {
   planName:     { fontSize:15, fontWeight:700, marginBottom:6 },
   planPrice:    { fontSize:28, fontWeight:800, marginBottom:4 },
   planInterval: { fontSize:12, color:"#64748b", marginBottom:12 },
+  planIdRow:    { display:"flex", alignItems:"center", gap:6, marginBottom:12, background:"#1e293b", borderRadius:6, padding:"6px 8px" },
+  planIdLabel:  { fontSize:10, color:"#64748b", fontWeight:700, textTransform:"uppercase", flexShrink:0 },
+  planIdCode:   { flexGrow:1, fontSize:11, color:"#93c5fd", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" },
+  copyIdBtn:    { background:"#334155", border:"none", color:"#f1f5f9", borderRadius:4, padding:"3px 8px", cursor:"pointer", fontSize:10, flexShrink:0 },
   features:     { margin:"0 0 12px", padding:"0 0 0 16px" },
   featureItem:  { fontSize:12, color:"#94a3b8", marginBottom:4 },
   planActions:  { display:"flex", gap:8 },

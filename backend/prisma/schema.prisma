@@ -29,6 +29,7 @@ model Client {
   website     String?
   status      ClientStatus @default(ACTIVE)
   plan        SaaSPlan     @default(STARTER)
+  promoMemo   String?      // set by platform admin only; recorded on-chain with every relayed payment to promote CryptoPay to both sides of the transaction
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -37,6 +38,8 @@ model Client {
   transactions Transaction[]
   subscribers  Subscriber[]
   webhooks     Webhook[]
+  orders       Order[]
+  gasDrops     GasDrop[]
 }
 
 enum ClientStatus {
@@ -68,22 +71,25 @@ enum Chain {
   BTC
   SOL
   XRP
+  TRX
 }
 
 // ── Subscription plans a client offers to THEIR users ─────────────────────
 model SubscriptionPlan {
-  id           String   @id @default(cuid())
-  clientId     String
-  name         String   // "Weekly", "Monthly", "Lifetime"
-  priceUsd     Float    // 29.99
-  intervalDays Int?     // null = lifetime, 7 = weekly, 30 = monthly
-  features     String?  // comma-separated feature list
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
+  id            String   @id @default(cuid())
+  clientId      String
+  name          String   // "Weekly", "Monthly", "Lifetime"
+  priceUsd      Float    // 29.99
+  intervalDays  Int?     // null = lifetime, 7 = weekly, 30 = monthly
+  features      String?  // comma-separated feature list
+  active        Boolean  @default(true)
+  isPaymentLink Boolean  @default(false) // true = a merchant-generated shareable pay link, not a subscription tier shown in Embed setup
+  createdAt     DateTime @default(now())
 
   client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   subscribers  Subscriber[]
   transactions Transaction[]
+  orders       Order[]
 }
 
 // ── Payments / transactions ────────────────────────────────────────────────
@@ -96,11 +102,36 @@ model Transaction {
   destinationTxHash  String?   // ETH delivery tx hash (for cross-chain Li.Fi swaps)
   amountUsd          Float     // USD equivalent at time of payment
   planId             String?
+  orderId            String?   // which Order this payment counts toward (partial-payment support)
   status             TxStatus  @default(PENDING)
   createdAt          DateTime  @default(now())
 
   client Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
   plan   SubscriptionPlan? @relation(fields: [planId],   references: [id])
+  order  Order?            @relation(fields: [orderId],  references: [id])
+}
+
+// ── Orders — tracks cumulative progress toward a plan's full price,        ──
+// ── so a buyer can pay in installments (any wallet/chain) until it's paid ──
+// ── off in full, at which point the subscriber activates.                 ──
+model Order {
+  id        String      @id @default(cuid())
+  clientId  String
+  planId    String
+  totalUsd  Float       // full plan price at the time the order was opened
+  paidUsd   Float       @default(0)
+  status    OrderStatus @default(OPEN)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  client       Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  plan         SubscriptionPlan  @relation(fields: [planId],   references: [id])
+  transactions Transaction[]
+}
+
+enum OrderStatus {
+  OPEN
+  COMPLETE
 }
 
 enum TxStatus {
@@ -124,6 +155,25 @@ model Subscriber {
   plan   SubscriptionPlan? @relation(fields: [planId],   references: [id])
 
   @@unique([clientId, userAddress])
+}
+
+// ── Gas drops — small native-token top-ups the platform sends to payers    ──
+// ── who don't have enough gas to complete a swap. Cost is absorbed by the  ──
+// ── platform; this table exists for rate-limiting and cost visibility.    ──
+model GasDrop {
+  id           String   @id @default(cuid())
+  clientId     String?  // which merchant's widget triggered this
+  address      String   // recipient — the payer's wallet
+  chain        String   // e.g. "Ethereum"
+  chainId      Int
+  amountNative Float
+  txHash       String
+  createdAt    DateTime @default(now())
+
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([address, chainId])
+  @@index([clientId, createdAt])
 }
 
 // ── Webhooks — notify client's server when payment arrives ────────────────
