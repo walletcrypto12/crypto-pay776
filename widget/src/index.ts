@@ -441,7 +441,7 @@ async function renderStep3(overlay: HTMLDivElement) {
 
   modal.innerHTML = `
     <div class="cp-header">
-      <span class="cp-title">${chain.icon} Pay via ${chain.name}</span>
+      <span class="cp-title">${chain.icon}Get Paid On ${chain.name}</span>
       <button class="cp-close" id="cp-close">✕</button>
     </div>
     ${planBadgeHtml()}
