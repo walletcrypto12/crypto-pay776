@@ -1,0 +1,28 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: root
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /root/cryptopay
+            git pull origin main
+
+            cd widget
+            npm install --no-audit --no-fund
+            node build.js
+            cd ..
+
+            docker compose build backend admin client
+            docker compose up -d backend admin client
