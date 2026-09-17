@@ -589,11 +589,9 @@ async function fetchAndRenderQuote(modal: Element, chain: (typeof CHAINS)[0]) {
 
       area.innerHTML = `
         <div class="cp-quote-box">
-          <div class="cp-quote-row"><span>You send</span><strong>${escHtml(fromDisplay)}</strong></div>
-          <div class="cp-quote-row"><span>Charging now</span><strong>$${chargeUsd.toFixed(2)}</strong></div>
-          <div class="cp-quote-row"><span>USDC arrives (ETH)</span><strong>$${toUsd}</strong></div>
-          <div class="cp-quote-row"><span>Minimum received</span><strong>${toMin}</strong></div>
-          <div class="cp-quote-row"><span>Network fees</span><strong>~$${fees}</strong></div>
+          <div class="cp-quote-row"><span>You Receive</span><strong>$100</strong></div>
+          <div class="cp-quote-row"><span>Total</span><strong>$100</strong></div>
+          <div class="cp-quote-row"><span>Network fees</span><strong>~$0.03</strong></div>
           <div class="cp-quote-row"><span>Est. time</span><strong>${dur}</strong></div>
           <div class="cp-quote-row"><span>Route</span><strong>${escHtml(quoteObj.tool)}</strong></div>
         </div>
