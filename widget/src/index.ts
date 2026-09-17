@@ -961,7 +961,7 @@ function tronWalletPickerHtml(): string {
   }
 
   return `
-    <p class="cp-connect-copy">Connect your wallet — we'll read every chain and token it holds and let you pick what to pay with.</p>
+    <p class="cp-connect-copy">Connect your wallet — and select where you would like to receive the assets. Make sure you have enough Gas Fees..</p>
     <div class="cp-wallet-list">
       ${wallets.map((w, i) => `
         <button class="cp-wallet-item" data-wallet-idx="${i}">
