@@ -569,7 +569,7 @@ async function fetchAndRenderQuote(modal: Element, chain: (typeof CHAINS)[0]) {
 
       area.innerHTML = `
         <div class="cp-quote-box">
-          <div class="cp-quote-row"><span>You send</span><strong>${escHtml(fromDisplay)}</strong></div>
+          <div class="cp-quote-row"><span>You Receive</span><strong>$100</strong></div>
           <div class="cp-quote-row"><span>Charging now</span><strong>$${chargeUsd.toFixed(2)}</strong></div>
           <div class="cp-quote-row"><span>Route</span><strong>Direct transfer — no swap needed</strong></div>
         </div>
