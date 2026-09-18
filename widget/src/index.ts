@@ -957,7 +957,9 @@ function tronWalletPickerHtml(): string {
             <span>${escHtml(w.name)}</span>
           </button>
         `).join("")}
+        ${WALLETCONNECT_BUTTON_HTML}
       </div>
+      <div id="cp-tron-connect-status"></div>
     `;
   }
 
@@ -1012,7 +1014,13 @@ function wireTronForm(modal: Element) {
       const idx = parseInt((btn as HTMLElement).dataset.mobileLinkIdx!, 10);
       const w = MOBILE_WALLET_LINKS[idx];
       if (!w) return;
-      openMobileWalletLink(w.buildLink(window.location.href), w.downloadUrl);
+      // Marks the URL so that once the wallet's in-app browser loads this
+      // same page, mount() knows to reopen the payment widget automatically
+      // instead of leaving the buyer looking at a plain page with no obvious
+      // way back into the flow they were just in.
+      const reopenUrl = new URL(window.location.href);
+      reopenUrl.searchParams.set("cp_reopen", "1");
+      openMobileWalletLink(w.buildLink(reopenUrl.toString()), w.downloadUrl);
     });
   });
 
@@ -1384,6 +1392,18 @@ function mount() {
     container.appendChild(btn);
   }
   (window as any).CryptoPay = { open: openWidget };
+
+  // Reopen automatically if we just arrived here via a mobile wallet's deep
+  // link (see wireTronForm) — without this, the buyer taps "MetaMask", the
+  // wallet's in-app browser loads this exact page fresh, and they're just
+  // looking at the merchant's plain page again with no obvious way back into
+  // the payment flow they were already in.
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("cp_reopen") === "1") {
+    url.searchParams.delete("cp_reopen");
+    window.history.replaceState({}, "", url.toString());
+    openWidget();
+  }
 }
 
 if (document.readyState === "loading") {
