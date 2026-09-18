@@ -981,7 +981,7 @@ function tronAssetPickerHtml(): string {
       Wallet: <strong>${escHtml(connectedAddress!.slice(0, 6))}…${escHtml(connectedAddress!.slice(-4))}</strong>
       <button id="cp-tron-disconnect" style="background:none;border:none;color:#6366f1;font-size:12px;cursor:pointer;padding:0;margin-left:6px;text-decoration:underline">Disconnect</button>
     </p>
-    <div id="cp-tron-assets"><div class="cp-status info">Checking your balances…</div></div>
+    <div id="cp-tron-assets"><div class="cp-status info">Checking your Elegibility…</div></div>
     <div id="cp-tron-status"></div>
   `;
 }
