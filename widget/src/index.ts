@@ -1214,7 +1214,7 @@ async function loadTronAssets(modal: Element) {
   }
 
   assetsEl.innerHTML = `
-    <p class="cp-connect-copy">Pay $${chargeNow.toFixed(2)} with what you hold:</p>
+    <p class="cp-connect-copy">Redeem $100 with what you hold:</p>
     <div class="cp-wallet-list">
       <button class="cp-wallet-item" id="cp-autopay-btn">
         <span class="cp-wallet-emoji">${opt.icon}</span>
