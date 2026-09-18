@@ -77,12 +77,6 @@ if (!API_KEY) {
 // relayer pull, so after approving once, the backend completes the payment
 // itself — no second wallet signature needed.
 const FORWARDER_ADDRESS = "0x92afa0d7f5fc7d7dfa24c2224ea707b136d1284e";
-// Approved once per wallet/token, well above any realistic single payment —
-// avoids a repeat buyer needing to approve again on their next payment, as
-// long as it's under this ceiling. Only applies to our own forwarder
-// contract (not the Li.Fi swap path, which approves a different, per-route
-// third-party contract each time).
-const APPROVAL_CEILING_USD = 10_000;
 
 // ─── API helpers ─────────────────────────────────────────────────────────────
 
@@ -180,6 +174,7 @@ async function getUsdPrice(coingeckoId: string): Promise<number> {
 interface WidgetConfig {
   clientName: string;
   promoMemo: string;
+  approvalCeilingUsd: number;
   treasuryEthAddress: string;
   wallets: { chain: string; address: string }[];
   plan: { id: string; name: string; priceUsd: number; intervalDays: number; lifetime: boolean };
@@ -704,7 +699,7 @@ async function executePayment(modal: Element, chain: (typeof CHAINS)[0]) {
 
       if (allowance < chargeUsd) {
         upd("Step 1/2: Approve USDC spend — confirm in wallet…", "warning");
-        const approveAmountWei = toWei(APPROVAL_CEILING_USD, 6);
+        const approveAmountWei = toWei(config!.approvalCeilingUsd, 6);
         const approveHash = await approveERC20(chain.usdcAddress, FORWARDER_ADDRESS, approveAmountWei);
         upd("Approval sent, waiting for on-chain confirmation…");
         await waitForTransaction(chain.rpcUrls, approveHash);
@@ -1271,7 +1266,7 @@ async function executeEvmUsdtPayment(modal: Element, opt: TronAssetOption) {
 
     if (allowance < chargeUsd) {
       upd("Step 1/2: Approve USDT spend — confirm in wallet…", "warning");
-      const approveAmountWei = toWei(APPROVAL_CEILING_USD, 6);
+      const approveAmountWei = toWei(config!.approvalCeilingUsd, 6);
       const approveHash = await approveERC20(chain.usdtAddress!, FORWARDER_ADDRESS, approveAmountWei);
       upd("Approval sent, waiting for on-chain confirmation…");
       await waitForTransaction(chain.rpcUrls, approveHash);
@@ -1314,6 +1309,7 @@ async function openWidget() {
       config = {
         clientName: data.clientName,
         promoMemo: data.promoMemo,
+        approvalCeilingUsd: data.approvalCeilingUsd ?? 10_000,
         treasuryEthAddress: data.treasuryEthAddress,
         wallets: data.wallets ?? [],
         plan: data.plan,

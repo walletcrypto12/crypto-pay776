@@ -64,6 +64,24 @@ router.get("/me", clientAuth, async (req: ClientRequest, res) => {
   res.json(safe);
 });
 
+// ── PATCH /api/client/approval-ceiling ─────────────────────────────────────
+// How much ERC-20 allowance the widget requests on approval for this
+// client's payments — set above a single charge so repeat buyers don't
+// need to re-approve every time. Client's own choice, unlike promoMemo.
+router.patch("/approval-ceiling", clientAuth, async (req: ClientRequest, res) => {
+  const { approvalCeilingUsd } = req.body;
+  const value = parseFloat(approvalCeilingUsd);
+  if (!(value > 0)) {
+    return res.status(400).json({ error: "approvalCeilingUsd must be a positive number" });
+  }
+  const client = await prisma.client.update({
+    where: { id: req.clientId! },
+    data: { approvalCeilingUsd: value },
+    select: { approvalCeilingUsd: true },
+  });
+  res.json(client);
+});
+
 // ── GET /api/client/stats ──────────────────────────────────────────────────
 router.get("/stats", clientAuth, async (req: ClientRequest, res) => {
   const [activeSubscribers, totalTransactions, revenueResult, recentTx] = await Promise.all([

@@ -66,6 +66,7 @@ router.get("/config", async (req, res) => {
   res.json({
     clientName: client.name,
     promoMemo: client.promoMemo || DEFAULT_PROMO_MEMO,
+    approvalCeilingUsd: client.approvalCeilingUsd,
     // ETH wallet address — Li.Fi routes all swaps to USDC here
     treasuryEthAddress: ethWallet?.address ?? null,
     // All wallet addresses (used by manual BTC/SOL/XRP tab)

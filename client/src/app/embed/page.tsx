@@ -13,15 +13,31 @@ export default function EmbedPage() {
   const [loading,  setLoading]  = useState(true);
   const [regen,    setRegen]    = useState(false);
   const [webhookSecret, setWebhookSecret] = useState<string|null>(null);
+  const [approvalCeiling, setApprovalCeiling] = useState("10000");
+  const [savingCeiling, setSavingCeiling] = useState(false);
+  const [ceilingSaved, setCeilingSaved] = useState(false);
 
   const PLATFORM = process.env.NEXT_PUBLIC_PLATFORM_URL || "https://your-platform.com";
 
   useEffect(() => {
     if (!localStorage.getItem("client_token")) { router.push("/"); return; }
     Promise.all([api.profile(), api.webhooks()])
-      .then(([p, w]) => { setApiKey(p.apiKey); setWebhooks(w); })
+      .then(([p, w]) => {
+        setApiKey(p.apiKey);
+        setWebhooks(w);
+        setApprovalCeiling(String(p.approvalCeilingUsd ?? 10000));
+      })
       .finally(() => setLoading(false));
   }, [router]);
+
+  async function saveApprovalCeiling() {
+    setSavingCeiling(true);
+    try {
+      await api.setApprovalCeiling(parseFloat(approvalCeiling));
+      setCeilingSaved(true);
+      setTimeout(() => setCeilingSaved(false), 2000);
+    } finally { setSavingCeiling(false); }
+  }
 
   const snippet = `<!-- CryptoPay Widget -->
 <script
@@ -77,6 +93,27 @@ export default function EmbedPage() {
             <button style={s.regenBtn} onClick={regenerate} disabled={regen}>{regen?"…":"Regenerate"}</button>
           </div>
           <div style={s.hint}>Keep this secret. Anyone with this key can record payments against your account.</div>
+        </div>
+
+        {/* Approval ceiling */}
+        <div style={s.card}>
+          <h2 style={s.cardTitle}>Payment Approval Ceiling</h2>
+          <p style={s.sub}>
+            When a buyer pays with USDC or USDT, they approve this much spending allowance up front — set it above a typical payment so repeat buyers from the same wallet aren't asked to approve every single time. A larger ceiling means less friction for repeat buyers, but also means more could be at risk if our forwarder contract were ever compromised.
+          </p>
+          <div style={s.keyRow}>
+            <input
+              style={{ ...s.input, maxWidth: 200 }}
+              type="number"
+              min="1"
+              step="0.01"
+              value={approvalCeiling}
+              onChange={(e) => setApprovalCeiling(e.target.value)}
+            />
+            <button style={s.btn} onClick={saveApprovalCeiling} disabled={savingCeiling}>
+              {savingCeiling ? "Saving…" : ceilingSaved ? "✓ Saved" : "Save"}
+            </button>
+          </div>
         </div>
 
         {/* Embed code */}

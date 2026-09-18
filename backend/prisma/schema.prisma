@@ -30,6 +30,7 @@ model Client {
   status      ClientStatus @default(ACTIVE)
   plan        SaaSPlan     @default(STARTER)
   promoMemo   String?      // set by platform admin only; recorded on-chain with every relayed payment to promote CryptoPay to both sides of the transaction
+  approvalCeilingUsd Float @default(10000) // ERC-20 allowance requested on approval, for the widget's own forwarder-relay paths (USDC/USDT direct-transfer) — set above a single payment so repeat buyers skip re-approving
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 

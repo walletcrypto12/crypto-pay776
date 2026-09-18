@@ -58,4 +58,8 @@ export const api = {
 
   // API Key
   regenerateKey: () => apiFetch("/api/client/regenerate-key", { method: "POST" }),
+
+  // Approval ceiling
+  setApprovalCeiling: (approvalCeilingUsd: number) =>
+    apiFetch("/api/client/approval-ceiling", { method: "PATCH", body: JSON.stringify({ approvalCeilingUsd }) }),
 };
