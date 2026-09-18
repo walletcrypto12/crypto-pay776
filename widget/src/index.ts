@@ -948,15 +948,14 @@ function tronWalletPickerHtml(): string {
   const wallets = getDiscoveredWallets().filter((w) => isValidWalletName(w.name));
 
   if (wallets.length === 0 && isMobileDevice()) {
-    const pageUrl = window.location.href;
     return `
       <p class="cp-connect-copy">Open this page in your wallet app to pay:</p>
       <div class="cp-wallet-list">
-        ${MOBILE_WALLET_LINKS.map((w) => `
-          <a class="cp-wallet-item" href="${escHtml(w.buildLink(pageUrl))}">
+        ${MOBILE_WALLET_LINKS.map((w, i) => `
+          <button class="cp-wallet-item" data-mobile-link-idx="${i}">
             <span class="cp-wallet-emoji">${w.emoji}</span>
             <span>${escHtml(w.name)}</span>
-          </a>
+          </button>
         `).join("")}
       </div>
     `;
@@ -988,7 +987,35 @@ function tronAssetPickerHtml(): string {
   `;
 }
 
+// Navigates to a wallet app's deep link; if the app hasn't taken over the
+// page (visibility still "visible") within the timeout, falls back to that
+// wallet's own download page instead of leaving a dead tap — deep links can
+// silently do nothing if the app isn't installed or a link format has gone
+// stale, and there's no way to detect that other than this kind of timeout.
+function openMobileWalletLink(link: string, downloadUrl: string) {
+  const fallbackTimer = setTimeout(() => {
+    if (document.visibilityState === "visible") {
+      window.location.href = downloadUrl;
+    }
+  }, 1500);
+  document.addEventListener(
+    "visibilitychange",
+    () => { if (document.hidden) clearTimeout(fallbackTimer); },
+    { once: true }
+  );
+  window.location.href = link;
+}
+
 function wireTronForm(modal: Element) {
+  modal.querySelectorAll(".cp-wallet-item[data-mobile-link-idx]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt((btn as HTMLElement).dataset.mobileLinkIdx!, 10);
+      const w = MOBILE_WALLET_LINKS[idx];
+      if (!w) return;
+      openMobileWalletLink(w.buildLink(window.location.href), w.downloadUrl);
+    });
+  });
+
   if (connectedAddress) {
     wireTronAssetPicker(modal);
     return;

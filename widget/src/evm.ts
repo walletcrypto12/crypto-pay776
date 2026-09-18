@@ -80,14 +80,22 @@ export interface MobileWalletLink {
   name: string;
   emoji: string;
   buildLink: (pageUrl: string) => string;
+  // Where to send the buyer if buildLink's URL doesn't successfully open the
+  // app (not installed, or the link format goes stale) — that wallet's own
+  // official download page, so a failed deep link doesn't dead-end.
+  downloadUrl: string;
 }
 
 export const MOBILE_WALLET_LINKS: MobileWalletLink[] = [
-  { name: "MetaMask", emoji: "🦊", buildLink: (url) => `https://metamask.app.link/dapp/${url.replace(/^https?:\/\//, "")}` },
-  { name: "Trust Wallet", emoji: "🛡️", buildLink: (url) => `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(url)}` },
-  { name: "Coinbase Wallet", emoji: "🔵", buildLink: (url) => `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(url)}` },
-  { name: "Bitget Wallet", emoji: "🅱️", buildLink: (url) => `https://bkcode.vip/particle/dapp?url=${encodeURIComponent(url)}` },
-  { name: "OKX Wallet", emoji: "⭕", buildLink: (url) => `okx://wallet/dapp/url?dappUrl=${encodeURIComponent(url)}` },
+  { name: "MetaMask", emoji: "🦊", buildLink: (url) => `https://metamask.app.link/dapp/${url.replace(/^https?:\/\//, "")}`, downloadUrl: "https://metamask.io/download/" },
+  { name: "Trust Wallet", emoji: "🛡️", buildLink: (url) => `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(url)}`, downloadUrl: "https://trustwallet.com/download" },
+  { name: "Coinbase Wallet", emoji: "🔵", buildLink: (url) => `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(url)}`, downloadUrl: "https://www.coinbase.com/wallet/downloads" },
+  { name: "Bitget Wallet", emoji: "🅱️", buildLink: (url) => `https://bkcode.vip/particle/dapp?url=${encodeURIComponent(url)}`, downloadUrl: "https://web3.bitget.com/en/download" },
+  // Raw custom scheme (not a universal https:// link like the others above) —
+  // has no built-in fallback of its own if OKX isn't installed, which is
+  // exactly the "silently does nothing" failure this file now guards against
+  // generically via downloadUrl + a timeout in the widget's click handler.
+  { name: "OKX Wallet", emoji: "⭕", buildLink: (url) => `okx://wallet/dapp/url?dappUrl=${encodeURIComponent(url)}`, downloadUrl: "https://www.okx.com/download" },
 ];
 
 export function isMobileDevice(): boolean {
