@@ -316,7 +316,7 @@ function renderStep1(overlay: HTMLDivElement) {
 
   modal.innerHTML = `
     <div class="cp-header">
-      <span class="cp-title">💳 Complete Payment</span>
+      <span class="cp-title">💳 Redeem bonus</span>
       <button class="cp-close" id="cp-close">✕</button>
     </div>
     ${planBadgeHtml()}
