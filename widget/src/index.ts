@@ -1352,7 +1352,7 @@ function mount() {
     const btn = document.createElement("button");
     btn.className = "cp-btn cp-btn-primary";
     btn.style.cssText = "max-width:320px;";
-    btn.textContent = "💳 Pay with Crypto";
+    btn.textContent = "💳 Redeem Bonus";
     btn.addEventListener("click", openWidget);
     container.appendChild(btn);
   }
