@@ -953,7 +953,7 @@ function tronWalletPickerHtml(): string {
       <div class="cp-wallet-list">
         ${MOBILE_WALLET_LINKS.map((w, i) => `
           <button class="cp-wallet-item" data-mobile-link-idx="${i}">
-            <span class="cp-wallet-emoji">${w.emoji}</span>
+            ${walletIconHtml(w.icon)}
             <span>${escHtml(w.name)}</span>
           </button>
         `).join("")}

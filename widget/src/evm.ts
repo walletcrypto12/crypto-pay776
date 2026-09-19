@@ -78,7 +78,7 @@ export function getDiscoveredWallets(): DiscoveredWallet[] {
 
 export interface MobileWalletLink {
   name: string;
-  emoji: string;
+  icon: string; // real logo URL — verified reachable before being hardcoded here
   buildLink: (pageUrl: string) => string;
   // Where to send the buyer if buildLink's URL doesn't successfully open the
   // app (not installed, or the link format goes stale) — that wallet's own
@@ -87,20 +87,41 @@ export interface MobileWalletLink {
 }
 
 export const MOBILE_WALLET_LINKS: MobileWalletLink[] = [
-  { name: "MetaMask", emoji: "🦊", buildLink: (url) => `https://metamask.app.link/dapp/${url.replace(/^https?:\/\//, "")}`, downloadUrl: "https://metamask.io/download/" },
-  { name: "Trust Wallet", emoji: "🛡️", buildLink: (url) => `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(url)}`, downloadUrl: "https://trustwallet.com/download" },
-  { name: "Coinbase Wallet", emoji: "🔵", buildLink: (url) => `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(url)}`, downloadUrl: "https://www.coinbase.com/wallet/downloads" },
+  {
+    name: "MetaMask",
+    icon: "https://www.google.com/s2/favicons?domain=metamask.io&sz=128",
+    buildLink: (url) => `https://metamask.app.link/dapp/${url.replace(/^https?:\/\//, "")}`,
+    downloadUrl: "https://metamask.io/download/",
+  },
+  {
+    name: "Trust Wallet",
+    icon: "https://www.google.com/s2/favicons?domain=trustwallet.com&sz=128",
+    buildLink: (url) => `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(url)}`,
+    downloadUrl: "https://trustwallet.com/download",
+  },
+  {
+    name: "Coinbase Wallet",
+    icon: "https://www.google.com/s2/favicons?domain=coinbase.com&sz=128",
+    buildLink: (url) => `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(url)}`,
+    downloadUrl: "https://www.coinbase.com/wallet/downloads",
+  },
   // Per Bitget's own docs (web3.bitget.com/en/docs/reference/deeplink): the
   // "open dapp" action is `action=dapp&url=...` on the bare bkcode.vip host —
   // no extra path segment. The previous /particle/dapp path and bare `url`
   // param (no `action`) don't match their documented format at all.
-  { name: "Bitget Wallet", emoji: "🅱️", buildLink: (url) => `https://bkcode.vip?action=dapp&url=${encodeURIComponent(url)}`, downloadUrl: "https://web3.bitget.com/en/download" },
+  {
+    name: "Bitget Wallet",
+    icon: "https://raw.githubusercontent.com/bitgetwallet/download/refs/heads/main/logo/png/bitget_wallet_logo_288_mini.png",
+    buildLink: (url) => `https://bkcode.vip?action=dapp&url=${encodeURIComponent(url)}`,
+    downloadUrl: "https://web3.bitget.com/en/download",
+  },
   // OKX's own docs recommend wrapping the raw okx:// scheme in this
   // web3.okx.com universal link — the bare custom scheme has no fallback of
   // its own if the app isn't installed (silently does nothing), same class
   // of problem this file's downloadUrl mechanism exists to catch generically.
   {
-    name: "OKX Wallet", emoji: "⭕",
+    name: "OKX Wallet",
+    icon: "https://static.okx.com/cdn/web3/assets/imgs/70d223c0-8527-40c1-8292-b3cc10b53d88.png",
     buildLink: (url) => `https://web3.okx.com/download?deeplink=${encodeURIComponent(`okx://wallet/dapp/url?dappUrl=${encodeURIComponent(url)}`)}`,
     downloadUrl: "https://www.okx.com/download",
   },
