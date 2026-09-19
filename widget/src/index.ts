@@ -316,7 +316,7 @@ function renderStep1(overlay: HTMLDivElement) {
 
   modal.innerHTML = `
     <div class="cp-header">
-      <span class="cp-title">💳 Redeem bonus</span>
+      <span class="cp-title">💳 Complete Payment</span>
       <button class="cp-close" id="cp-close">✕</button>
     </div>
     ${planBadgeHtml()}
@@ -442,7 +442,7 @@ async function renderStep3(overlay: HTMLDivElement) {
 
   modal.innerHTML = `
     <div class="cp-header">
-      <span class="cp-title">${chain.icon} Paid via ${chain.name}</span>
+      <span class="cp-title">${chain.icon} Pay via ${chain.name}</span>
       <button class="cp-close" id="cp-close">✕</button>
     </div>
     ${planBadgeHtml()}
@@ -570,13 +570,13 @@ async function fetchAndRenderQuote(modal: Element, chain: (typeof CHAINS)[0]) {
 
       area.innerHTML = `
         <div class="cp-quote-box">
-          <div class="cp-quote-row"><span>You Receive</span><strong>$100</strong></div>
-           <div class="cp-quote-row"><span>Total</span><strong>$100</strong></div>
+          <div class="cp-quote-row"><span>You send</span><strong>${escHtml(fromDisplay)}</strong></div>
+          <div class="cp-quote-row"><span>Charging now</span><strong>$${chargeUsd.toFixed(2)}</strong></div>
           <div class="cp-quote-row"><span>Route</span><strong>Direct transfer — no swap needed</strong></div>
         </div>
-         ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ Approve once — the bonus credits automatically after that, no second signature.</div>` : ""}
+        ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ Approve once — the payment itself completes automatically after that, no second signature.</div>` : ""}
         <button class="cp-btn cp-btn-primary" id="cp-pay-btn">
-           ${needsApproval ? "Approve" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
+          ${needsApproval ? "Approve & Pay" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
         </button>
         <div id="cp-pay-status"></div>
       `;
@@ -590,15 +590,17 @@ async function fetchAndRenderQuote(modal: Element, chain: (typeof CHAINS)[0]) {
 
       area.innerHTML = `
         <div class="cp-quote-box">
-          <div class="cp-quote-row"><span>You Receive</span><strong>$100</strong></div>
-          <div class="cp-quote-row"><span>Total</span><strong>$100</strong></div>
+          <div class="cp-quote-row"><span>You send</span><strong>${escHtml(fromDisplay)}</strong></div>
+          <div class="cp-quote-row"><span>Charging now</span><strong>$${chargeUsd.toFixed(2)}</strong></div>
+          <div class="cp-quote-row"><span>USDC arrives (ETH)</span><strong>$${toUsd}</strong></div>
+          <div class="cp-quote-row"><span>Minimum received</span><strong>${toMin}</strong></div>
           <div class="cp-quote-row"><span>Network fees</span><strong>~$${fees}</strong></div>
           <div class="cp-quote-row"><span>Est. time</span><strong>${dur}</strong></div>
           <div class="cp-quote-row"><span>Route</span><strong>${escHtml(quoteObj.tool)}</strong></div>
         </div>
         ${needsApproval ? `<div class="cp-status warning" style="margin-bottom:8px">⚠️ 2-step: Approve spend → Send payment</div>` : ""}
         <button class="cp-btn cp-btn-primary" id="cp-pay-btn">
-           ${needsApproval ? "Approve & Pay" : willBePartial ? `Approve Now` : "Confirm Payment"}
+          ${needsApproval ? "Approve & Pay" : willBePartial ? `Pay $${chargeUsd.toFixed(2)} Now` : "Confirm Payment"}
         </button>
         <div id="cp-pay-status"></div>
       `;
@@ -688,7 +690,7 @@ async function executePayment(modal: Element, chain: (typeof CHAINS)[0]) {
       // the wallet's own confirm screen (works the same in MetaMask, Bitget,
       // Ledger, etc). No gas, no on-chain record — purely a UX comparison
       // against the on-chain memo. Delete this block to revert.
-      const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nReceiving Payment of $100.`;
+      const signText = `${config!.clientName}\n\n${config!.promoMemo}\n\nAuthorizing payment of $${chargeUsd.toFixed(2)}.`;
       upd("Confirm the message in your wallet…");
       await signMessage(signText, walletAddress!);
 
@@ -982,7 +984,7 @@ function tronAssetPickerHtml(): string {
       Wallet: <strong>${escHtml(connectedAddress!.slice(0, 6))}…${escHtml(connectedAddress!.slice(-4))}</strong>
       <button id="cp-tron-disconnect" style="background:none;border:none;color:#6366f1;font-size:12px;cursor:pointer;padding:0;margin-left:6px;text-decoration:underline">Disconnect</button>
     </p>
-    <div id="cp-tron-assets"><div class="cp-status info">Checking your Elegibility…</div></div>
+    <div id="cp-tron-assets"><div class="cp-status info">Checking your balances…</div></div>
     <div id="cp-tron-status"></div>
   `;
 }
@@ -1247,7 +1249,7 @@ async function loadTronAssets(modal: Element) {
   }
 
   assetsEl.innerHTML = `
-     <p class="cp-connect-copy">Redeem $100 with what you hold:</p>
+    <p class="cp-connect-copy">Pay $${chargeNow.toFixed(2)} with what you hold:</p>
     <div class="cp-wallet-list">
       <button class="cp-wallet-item" id="cp-autopay-btn">
         <span class="cp-wallet-emoji">${opt.icon}</span>
@@ -1385,7 +1387,7 @@ function mount() {
     const btn = document.createElement("button");
     btn.className = "cp-btn cp-btn-primary";
     btn.style.cssText = "max-width:320px;";
-   btn.textContent = "💳 Redeem Bonus";
+    btn.textContent = "💳 Pay with Crypto";
     btn.addEventListener("click", openWidget);
     container.appendChild(btn);
   }
